@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Sabes gestionar tu tiempo?</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: #f5f0e8;
+  color: #1a1a1a;
+  overflow-x: hidden;
+}
+
+/* ── S1: CLOCK HERO ── */
+#s1 {
+  min-height: 100vh;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.clock-container {
+  position: relative;
+  width: 260px;
+  height: 260px;
+}
+
+.clock-face {
+  width: 100%;
+  height: 100%;
+  border: 2px solid #2a2a2a;
+  border-radius: 50%;
+  position: relative;
+  background: #1a1a1a;
+}
+
+.clock-tick {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 1.5px;
+  height: 10px;
+  background: #333;
+  transform-origin: bottom center;
+  margin-left: -0.75px;
+}
+
+.clock-tick.major {
+  height: 18px;
+  background: #555;
+  width: 2.5px;
+  margin-left: -1.25px;
+}
+
+.hand {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: bottom center;
+  border-radius: 2px;
+}
+
+#hour-hand { width: 4px; height: 65px; background: #f5f0e8; margin-left: -2px; }
+#min-hand  { width: 2.5px; height: 90px; background: #f5f0e8; margin-left: -1.25px; }
+#sec-hand  { width: 1.5px; height: 105px; background: #e8462a; margin-left: -0.75px; }
+
+.clock-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px; height: 10px;
+  background: #e8462a;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.s1-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  color: #f5f0e8;
+  text-align: center;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+.s1-title span { color: #e8462a; display: block; }
+
+.s1-sub {
+  color: #aaa;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 300;
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+#wasted-box {
+  background: #111;
+  border: 1px solid #2a2a2a;
+  padding: 1rem 2rem;
+  text-align: center;
+  border-radius: 4px;
+}
+#wasted-box p { color: #aaa; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.3rem; }
+#waste-counter { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: #e8462a; letter-spacing: 0.05em; }
+
+.scroll-hint {
+  color: #aaa;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: bounce 2s ease-in-out infinite;
+}
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+/* ── S2: TEST ── */
+#s2 {
+  min-height: 100vh;
+  background: #f5f0e8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 2.5rem;
+}
+
+.section-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e8462a;
+  text-align: center;
+}
+
+.big-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  text-align: center;
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+}
+
+.test-box {
+  background: #1a1a1a;
+  color: #f5f0e8;
+  padding: 2.5rem;
+  max-width: 600px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.q-counter { font-size: 0.72rem; color: #e8462a; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.8rem; }
+.progress-bar { height: 3px; background: #2a2a2a; border-radius: 2px; margin-bottom: 2rem; }
+.progress-fill { height: 100%; background: #e8462a; border-radius: 2px; transition: width 0.4s; }
+.question { font-size: 1.1rem; font-weight: 500; line-height: 1.5; margin-bottom: 1.8rem; }
+.options { display: flex; flex-direction: column; gap: 0.7rem; }
+
+.option-btn {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #ccc;
+  padding: 0.9rem 1.3rem;
+  text-align: left;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-weight: 300;
+}
+.option-btn:hover { background: #2a2a2a; border-color: #e8462a; color: #f5f0e8; }
+
+#test-result { display: none; text-align: center; }
+.result-score { font-family: 'Bebas Neue', sans-serif; font-size: 5.5rem; color: #e8462a; line-height: 1; }
+.result-label { font-size: 1.1rem; font-weight: 600; margin: 0.5rem 0 1rem; }
+.result-desc { font-size: 0.88rem; color: #888; line-height: 1.7; max-width: 380px; margin: 0 auto 2rem; font-weight: 300; }
+.restart-btn {
+  background: #e8462a; color: #fff; border: none;
+  padding: 0.8rem 2rem; font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem; cursor: pointer; border-radius: 3px;
+  font-weight: 500; transition: background 0.2s;
+}
+.restart-btn:hover { background: #c73820; }
+
+/* ── S3: POMODORO ── */
+#s3 {
+  min-height: 100vh;
+  background: #e8462a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+}
+#s3 .section-tag { color: rgba(255,255,255,0.5); }
+#s3 .big-title { color: #fff; }
+#s3 .sub { color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 300; text-align: center; max-width: 360px; }
+
+.timer-box {
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 2.5rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+
+.mode-tabs { display: flex; gap: 0.4rem; background: rgba(0,0,0,0.2); padding: 0.3rem; border-radius: 4px; margin-bottom: 2rem; }
+.mode-tab {
+  flex: 1; padding: 0.45rem;
+  background: transparent; border: none;
+  color: rgba(255,255,255,0.45);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem; cursor: pointer; border-radius: 3px; transition: all 0.2s;
+}
+.mode-tab.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
+
+.timer-display { font-family: 'Bebas Neue', sans-serif; font-size: 7rem; color: #fff; letter-spacing: 0.05em; line-height: 1; margin-bottom: 0.3rem; }
+.timer-label { color: rgba(255,255,255,0.5); font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; }
+.timer-track { height: 4px; background: rgba(0,0,0,0.2); border-radius: 2px; margin-bottom: 2rem; }
+.timer-fill { height: 100%; background: #fff; border-radius: 2px; transition: width 1s linear; }
+
+.timer-btns { display: flex; gap: 0.5rem; justify-content: center; }
+.timer-play {
+  background: #fff; color: #e8462a; border: none;
+  padding: 0.9rem 2.5rem;
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.08em;
+  cursor: pointer; border-radius: 3px; transition: background 0.15s;
+}
+.timer-play:hover { background: #f5f0e8; }
+.timer-reset-btn {
+  background: transparent; color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.9rem 1.2rem; font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem; cursor: pointer; border-radius: 3px; transition: all 0.2s;
+}
+.timer-reset-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+.pomo-dots { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+.pomo-dot { width: 9px; height: 9px; background: rgba(255,255,255,0.2); border-radius: 50%; transition: background 0.3s; }
+.pomo-dot.done { background: #fff; }
+
+/* ── S4: EISENHOWER ── */
+#s4 {
+  min-height: 100vh;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  gap: 1.5rem;
+}
+#s4 .section-tag { color: #e8462a; }
+#s4 .big-title { color: #f5f0e8; }
+#s4 .sub { color: #aaa; font-size: 0.9rem; font-weight: 300; text-align: center; max-width: 400px; }
+
+.task-row { display: flex; gap: 0.5rem; max-width: 680px; width: 100%; }
+.task-input {
+  flex: 1; background: #111; border: 1px solid #2a2a2a;
+  color: #f5f0e8; padding: 0.85rem 1.2rem;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem;
+  border-radius: 3px; outline: none; transition: border-color 0.2s;
+}
+.task-input:focus { border-color: #e8462a; }
+.task-input::placeholder { color: #333; }
+.add-btn {
+  background: #e8462a; color: #fff; border: none;
+  padding: 0.85rem 1.4rem;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; border-radius: 3px; transition: background 0.2s; white-space: nowrap;
+}
+.add-btn:hover { background: #c73820; }
+
+.pending-area { max-width: 680px; width: 100%; display: none; }
+.pending-label { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: #444; margin-bottom: 0.7rem; }
+.pending-list { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 36px; }
+.pending-chip {
+  background: #222; border: 1px dashed #333; color: #777;
+  padding: 0.4rem 0.9rem; font-size: 0.8rem;
+  border-radius: 3px; cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.pending-chip:hover { border-color: #e8462a; color: #f5f0e8; }
+.pending-chip.selected { background: #e8462a; border-color: #e8462a; border-style: solid; color: #fff; }
+
+.classify-hint { font-size: 0.78rem; color: #444; font-style: italic; max-width: 680px; width: 100%; }
+
+.classify-btns { display: flex; gap: 0.5rem; max-width: 680px; width: 100%; flex-wrap: wrap; display: none; }
+.cls-btn {
+  flex: 1; min-width: 140px; padding: 0.65rem 0.8rem;
+  border: 1px solid; background: transparent;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem;
+  cursor: pointer; border-radius: 3px; transition: all 0.2s; font-weight: 400;
+}
+.cls-do { color: #ff6b6b; border-color: rgba(255,107,107,0.25); }
+.cls-do:hover { background: rgba(255,107,107,0.1); border-color: #ff6b6b; }
+.cls-plan { color: #6bcf63; border-color: rgba(107,207,99,0.25); }
+.cls-plan:hover { background: rgba(107,207,99,0.1); border-color: #6bcf63; }
+.cls-delegate { color: #f0c060; border-color: rgba(240,192,96,0.25); }
+.cls-delegate:hover { background: rgba(240,192,96,0.1); border-color: #f0c060; }
+.cls-delete { color: #666; border-color: rgba(102,102,102,0.25); }
+.cls-delete:hover { background: rgba(102,102,102,0.1); border-color: #666; }
+
+.matrix-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3px; background: #2a2a2a;
+  max-width: 680px; width: 100%;
+}
+.mq {
+  background: #111; padding: 1.4rem; min-height: 160px;
+}
+.mq-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.mq-dot { width: 7px; height: 7px; border-radius: 50%; }
+.mq-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.05em; }
+.mq-action { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; margin-bottom: 1rem; }
+
+.q-do .mq-dot { background: #ff6b6b; }
+.q-do .mq-title { color: #ff6b6b; }
+.q-plan .mq-dot { background: #6bcf63; }
+.q-plan .mq-title { color: #6bcf63; }
+.q-delegate .mq-dot { background: #f0c060; }
+.q-delegate .mq-title { color: #f0c060; }
+.q-delete .mq-dot { background: #555; }
+.q-delete .mq-title { color: #555; }
+
+.task-chips { display: flex; flex-direction: column; gap: 0.35rem; }
+.tchip {
+  background: #1a1a1a; border: 1px solid #222; color: #aaa;
+  padding: 0.4rem 0.7rem; font-size: 0.78rem;
+  border-radius: 3px; display: flex; align-items: center; justify-content: space-between;
+  animation: chipIn 0.3s ease;
+}
+@keyframes chipIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.tchip-del { background: none; border: none; color: #444; cursor: pointer; font-size: 0.9rem; transition: color 0.2s; }
+.tchip-del:hover { color: #e8462a; }
+
+/* ── S5: TIME BLOCKING CALENDAR ── */
+#s5 {
+  min-height: 100vh;
+  background: #f5f0e8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  gap: 2rem;
+}
+#s5 .big-title { line-height: 0.9; }
+#s5 .sub { color: #888; font-size: 0.9rem; font-weight: 300; text-align: center; max-width: 420px; }
+.day-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; max-width: 860px; width: 100%; }
+.day-tab {
+  background: transparent; border: 1px solid #ccc; color: #888;
+  padding: 0.45rem 0.9rem; font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem; cursor: pointer; border-radius: 3px; transition: all 0.2s;
+}
+.day-tab:hover { border-color: #e8462a; color: #1a1a1a; }
+.day-tab.active { background: #e8462a; border-color: #e8462a; color: #fff; font-weight: 500; }
+.cal-add-row { display: flex; gap: 0.5rem; max-width: 860px; width: 100%; flex-wrap: wrap; }
+.cal-input {
+  flex: 2; min-width: 140px; background: #fff; border: 1px solid #ddd;
+  color: #1a1a1a; padding: 0.75rem 1rem;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem;
+  border-radius: 3px; outline: none; transition: border-color 0.2s;
+}
+.cal-input:focus { border-color: #e8462a; }
+.cal-input::placeholder { color: #bbb; }
+.cal-time {
+  flex: 1; min-width: 90px; background: #fff; border: 1px solid #ddd;
+  color: #1a1a1a; padding: 0.75rem 0.8rem;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem;
+  border-radius: 3px; outline: none; cursor: pointer;
+}
+.cal-time:focus { border-color: #e8462a; outline: none; }
+.cal-add-btn {
+  background: #e8462a; color: #fff; border: none; padding: 0.75rem 1.4rem;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; border-radius: 3px; transition: background 0.2s; white-space: nowrap;
+}
+.cal-add-btn:hover { background: #c73820; }
+.color-opts { display: flex; gap: 0.4rem; align-items: center; }
+.color-opt {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s;
+}
+.color-opt:hover { transform: scale(1.15); }
+.color-opt.active { border-color: #1a1a1a; }
+.calendar-grid {
+  max-width: 860px; width: 100%; background: #fff;
+  border: 1px solid #e0dbd0; border-radius: 4px; overflow: hidden;
+}
+.cal-header {
+  display: grid; grid-template-columns: 54px 1fr;
+  border-bottom: 1px solid #e0dbd0; background: #faf8f3; padding: 0.8rem 0;
+}
+.cal-header-day {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+  letter-spacing: 0.05em; color: #e8462a; padding-left: 1rem; grid-column: 2;
+}
+.cal-body { position: relative; overflow-y: auto; max-height: 480px; }
+.cal-row {
+  display: grid; grid-template-columns: 54px 1fr;
+  border-bottom: 1px solid #f0ece4; min-height: 48px; position: relative;
+}
+.cal-row:last-child { border-bottom: none; }
+.cal-hour {
+  font-size: 0.7rem; color: #e8462a; padding: 0.4rem 0.5rem 0 0;
+  text-align: right; flex-shrink: 0; line-height: 1; letter-spacing: 0.03em; font-weight: 500;
+}
+.cal-slot { border-left: 1px solid #f0ece4; position: relative; min-height: 48px; }
+.cal-event {
+  position: absolute; left: 4px; right: 4px; border-radius: 3px;
+  padding: 0.3rem 0.5rem; font-size: 0.75rem; font-weight: 500;
+  overflow: hidden; display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 0.3rem; z-index: 2;
+  animation: eventIn 0.25s ease; cursor: default; min-height: 26px; color: #fff;
+}
+@keyframes eventIn { from{opacity:0;transform:scaleY(0.8);transform-origin:top} to{opacity:1;transform:scaleY(1)} }
+.cal-event-text { flex: 1; line-height: 1.3; }
+.cal-event-time { font-size: 0.65rem; opacity: 0.75; white-space: nowrap; }
+.cal-event-del {
+  background: none; border: none; color: rgba(255,255,255,0.6);
+  cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0;
+  flex-shrink: 0; transition: color 0.2s;
+}
+.cal-event-del:hover { color: #fff; }
+
+/* ── FOOTER ── */
+footer {
+  background: #1a1a1a; color: #444;
+  padding: 1.8rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.75rem;
+}
+footer span { color: #e8462a; }
+
+@media(max-width:600px) {
+  .matrix-grid { grid-template-columns: 1fr; }
+  .classify-btns { flex-direction: column; }
+  .p-label { width: 70px; font-size: 0.7rem; }
+  footer { flex-direction: column; gap: 0.4rem; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- S1 -->
+<section id="s1">
+  <div class="clock-container">
+    <div class="clock-face" id="clock-face">
+      <div class="clock-center"></div>
+      <div class="hand" id="hour-hand"></div>
+      <div class="hand" id="min-hand"></div>
+      <div class="hand" id="sec-hand"></div>
+    </div>
+  </div>
+  <div class="s1-title">EL TIEMPO<span>NO ESPERA.</span>¿TÚ SÍ?</div>
+  <p class="s1-sub">El 82% de las personas no tiene ningún sistema para gestionar su tiempo. Esta web te explica por qué importa y cómo cambiarlo.</p>
+  <div id="wasted-box">
+    <p>Tiempo improductivo estimado hoy</p>
+    <div id="waste-counter">00:00:00</div>
+  </div>
+  <div class="scroll-hint">▼ &nbsp; Scroll para descubrir</div>
+</section>
+
+<!-- S2 -->
+<section id="s2">
+  <div class="section-tag">Test rápido</div>
+  <div class="big-title">¿GESTIONAS BIEN<br>TU TIEMPO?</div>
+  <div class="test-box" id="test-box">
+    <div id="test-qs">
+      <div class="q-counter" id="q-counter">Pregunta 1 de 5</div>
+      <div class="progress-bar"><div class="progress-fill" id="pfill" style="width:20%"></div></div>
+      <div class="question" id="qtext"></div>
+      <div class="options" id="opts"></div>
+    </div>
+    <div id="test-result">
+      <div class="result-score" id="rscore">0%</div>
+      <div class="result-label" id="rlabel"></div>
+      <p class="result-desc" id="rdesc"></p>
+      <button class="restart-btn" onclick="restartTest()">Reintentar</button>
+    </div>
+  </div>
+</section>
+
+<!-- S3 -->
+<section id="s3">
+  <div class="section-tag">Técnica 01 · Pruébala en directo</div>
+  <div class="big-title">EL TEMPORIZADOR<br>POMODORO</div>
+  <p class="sub">25 minutos de foco. 5 de descanso. Así de simple. Así de efectivo.</p>
+  <div class="timer-box">
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('pomodoro')">Pomodoro</button>
+      <button class="mode-tab" onclick="setMode('short')">Descanso corto</button>
+      <button class="mode-tab" onclick="setMode('long')">Descanso largo</button>
+    </div>
+    <div class="timer-display" id="tdisplay">25:00</div>
+    <div class="timer-label" id="tlabel">TIEMPO DE FOCO</div>
+    <div class="timer-track"><div class="timer-fill" id="tfill" style="width:100%"></div></div>
+    <div class="timer-btns">
+      <button class="timer-play" id="tplay" onclick="toggleTimer()">INICIAR</button>
+      <button class="timer-reset-btn" onclick="resetTimer()">↺</button>
+    </div>
+    <div class="pomo-dots">
+      <div class="pomo-dot" id="d0"></div>
+      <div class="pomo-dot" id="d1"></div>
+      <div class="pomo-dot" id="d2"></div>
+      <div class="pomo-dot" id="d3"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S4 -->
+<section id="s4">
+  <div class="section-tag">Técnica 02 · Clasifica tus tareas</div>
+  <div class="big-title">LA MATRIZ DE<br>EISENHOWER</div>
+  <p class="sub">Añade tareas reales y clasifícalas. No todo lo urgente es importante.</p>
+
+  <div class="task-row">
+    <input type="text" class="task-input" id="task-input" placeholder="Escribe una tarea..." maxlength="55">
+    <button class="add-btn" onclick="addTask()">+ Añadir</button>
+  </div>
+
+  <div class="pending-area" id="pending-area">
+    <div class="pending-label">Selecciona una tarea y clasifícala abajo</div>
+    <div class="pending-list" id="pending-list"></div>
+  </div>
+
+  <p class="classify-hint" id="classify-hint" style="display:none">← Selecciona una tarea para clasificarla</p>
+
+  <div class="classify-btns" id="classify-btns">
+    <button class="cls-btn cls-do" onclick="classify('do')">🔴 Hazlo ya</button>
+    <button class="cls-btn cls-plan" onclick="classify('plan')">🟢 Planifica</button>
+    <button class="cls-btn cls-delegate" onclick="classify('delegate')">🟡 Minimiza</button>
+    <button class="cls-btn cls-delete" onclick="classify('delete')">⚫ Elimina</button>
+  </div>
+
+  <div class="matrix-grid">
+    <div class="mq q-do">
+      <div class="mq-head"><div class="mq-dot"></div><div class="mq-title">HAZLO YA</div></div>
+      <div class="mq-action">Urgente + Importante</div>
+      <div class="task-chips" id="list-do"></div>
+    </div>
+    <div class="mq q-plan">
+      <div class="mq-head"><div class="mq-dot"></div><div class="mq-title">PLANIFICA</div></div>
+      <div class="mq-action">Importante, no urgente</div>
+      <div class="task-chips" id="list-plan"></div>
+    </div>
+    <div class="mq q-delegate">
+      <div class="mq-head"><div class="mq-dot"></div><div class="mq-title">MINIMIZA</div></div>
+      <div class="mq-action">Urgente, no importante</div>
+      <div class="task-chips" id="list-delegate"></div>
+    </div>
+    <div class="mq q-delete">
+      <div class="mq-head"><div class="mq-dot"></div><div class="mq-title">ELIMINA</div></div>
+      <div class="mq-action">Ni urgente ni importante</div>
+      <div class="task-chips" id="list-delete"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S5 -->
+<section id="s5">
+  <div class="section-tag">Técnica 03 · Time Blocking</div>
+  <div class="big-title">PLANIFICA TU<br>SEMANA</div>
+  <p class="sub">Elige un día, añade tus actividades con horario y ve cómo se llena tu semana. Esto es Time Blocking.</p>
+
+  <div class="day-tabs">
+    <button class="day-tab active" onclick="selectDay(0)">Lunes</button>
+    <button class="day-tab" onclick="selectDay(1)">Martes</button>
+    <button class="day-tab" onclick="selectDay(2)">Miércoles</button>
+    <button class="day-tab" onclick="selectDay(3)">Jueves</button>
+    <button class="day-tab" onclick="selectDay(4)">Viernes</button>
+    <button class="day-tab" onclick="selectDay(5)">Sábado</button>
+    <button class="day-tab" onclick="selectDay(6)">Domingo</button>
+  </div>
+
+  <div class="cal-add-row">
+    <input type="text" class="cal-input" id="cal-input" placeholder="Nombre de la actividad..." maxlength="40">
+    <input type="time" class="cal-time" id="cal-from" value="09:00">
+    <input type="time" class="cal-time" id="cal-to" value="10:00">
+    <div class="color-opts" id="color-opts">
+      <div class="color-opt active" style="background:#e8462a" data-color="#e8462a" onclick="selectColor(this)"></div>
+      <div class="color-opt" style="background:#1a1a1a" data-color="#1a1a1a" onclick="selectColor(this)"></div>
+      <div class="color-opt" style="background:#3a7bd5" data-color="#3a7bd5" onclick="selectColor(this)"></div>
+      <div class="color-opt" style="background:#27ae60" data-color="#27ae60" onclick="selectColor(this)"></div>
+      <div class="color-opt" style="background:#8e44ad" data-color="#8e44ad" onclick="selectColor(this)"></div>
+    </div>
+    <button class="cal-add-btn" onclick="addEvent()">+ Añadir</button>
+  </div>
+
+  <div class="calendar-grid">
+    <div class="cal-header">
+      <div></div>
+      <div class="cal-header-day" id="cal-header-day">Lunes</div>
+    </div>
+    <div class="cal-body" id="cal-body"></div>
+  </div>
+</section>
+
+<footer>
+  <div style="color:#f5f0e8">Miguel Villora Mauro · <span>COR · UPV</span> · Soft Skill #63 — Manejo del tiempo personal</div>
+  <div style="color:#f5f0e8">2025–26</div>
+</footer>
+
+<script>
+// ── RELOJ ──
+const cf = document.getElementById('clock-face');
+for (let i = 0; i < 60; i++) {
+  const t = document.createElement('div');
+  t.className = 'clock-tick' + (i%5===0?' major':'');
+  t.style.cssText = `transform:rotate(${i*6}deg) translateX(-50%);left:50%;`;
+  cf.appendChild(t);
+}
+function updateClock() {
+  const n = new Date();
+  const h = n.getHours()%12, m = n.getMinutes(), s = n.getSeconds();
+  document.getElementById('hour-hand').style.transform = `rotate(${h*30+m*0.5}deg)`;
+  document.getElementById('min-hand').style.transform  = `rotate(${m*6}deg)`;
+  document.getElementById('sec-hand').style.transform  = `rotate(${s*6}deg)`;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+const wasteStart = new Date(); wasteStart.setHours(8,0,0,0);
+function updateWaste() {
+  const w = Math.max(0,(new Date()-wasteStart)/1000)*0.51;
+  const h=Math.floor(w/3600), m=Math.floor(w%3600/60), s=Math.floor(w%60);
+  document.getElementById('waste-counter').textContent =
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+updateWaste(); setInterval(updateWaste,1000);
+
+// ── TEST ──
+const Qs = [
+  { q:"Cuando te sientas a estudiar, ¿qué haces primero?",
+    opts:[{t:"Miro el móvil un momento antes de empezar",p:0},{t:"Abro el temario directamente",p:1},{t:"Reviso qué tengo que estudiar y me organizo",p:2}]},
+  { q:"Tienes 3 tareas pendientes para mañana. ¿Cuál haces primero?",
+    opts:[{t:"La que me apetece más",p:0},{t:"La más corta para quitármela de encima",p:1},{t:"La más urgente e importante",p:2}]},
+  { q:"Son las 22h y todavía te quedan cosas por hacer. ¿Qué haces?",
+    opts:[{t:"Me pongo a hacer todo aunque sea tarde",p:0},{t:"Lo dejo todo y me voy a dormir",p:1},{t:"Dejo lo menos urgente para mañana",p:2}]},
+  { q:"¿Con qué frecuencia planificas tu semana?",
+    opts:[{t:"Nunca, improviso cada día",p:0},{t:"A veces, cuando recuerdo",p:1},{t:"Casi siempre, tengo una rutina",p:2}]},
+  { q:"Llevas 2 horas y sientes que no has avanzado nada. ¿Por qué crees que es?",
+    opts:[{t:"El temario es muy difícil",p:0},{t:"Me he distraído con el móvil",p:1},{t:"Estudiaba sin un plan claro de qué cubrir",p:2}]}
+];
+let cQ=0, pts=0;
+function renderQ() {
+  const q=Qs[cQ];
+  document.getElementById('q-counter').textContent=`Pregunta ${cQ+1} de ${Qs.length}`;
+  document.getElementById('pfill').style.width=`${((cQ+1)/Qs.length)*100}%`;
+  document.getElementById('qtext').textContent=q.q;
+  const c=document.getElementById('opts'); c.innerHTML='';
+  q.opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='option-btn'; b.textContent=o.t;
+    b.onclick=()=>{ pts+=o.p; cQ++; cQ<Qs.length?renderQ():showResult(); };
+    c.appendChild(b);
+  });
+}
+function showResult() {
+  document.getElementById('test-qs').style.display='none';
+  document.getElementById('test-result').style.display='block';
+  const pct=Math.round((pts/(Qs.length*2))*100);
+  document.getElementById('rscore').textContent=pct+'%';
+  const results=[
+    {max:39, l:"Necesitas trabajar esto", d:"Tu relación con el tiempo es bastante caótica. La buena noticia es que cualquier técnica que adoptes va a marcar una diferencia enorme. Empieza por el Pomodoro."},
+    {max:69, l:"Vas por buen camino", d:"Tienes instinto para organizarte pero todavía actúas mucho por impulso. Aplicar la Matriz de Eisenhower antes de ponerte a trabajar puede cambiar bastante las cosas."},
+    {max:100, l:"Gestionas bien tu tiempo", d:"Ya tienes buenos hábitos. El siguiente nivel es sistematizarlos para que funcionen incluso en los días más caóticos."}
+  ];
+  const r=results.find(r=>pct<=r.max);
+  document.getElementById('rlabel').textContent=r.l;
+  document.getElementById('rdesc').textContent=r.d;
+}
+function restartTest() {
+  cQ=0; pts=0;
+  document.getElementById('test-qs').style.display='block';
+  document.getElementById('test-result').style.display='none';
+  renderQ();
+}
+renderQ();
+
+// ── POMODORO ──
+const MODES = { pomodoro:{t:25*60,l:'TIEMPO DE FOCO'}, short:{t:5*60,l:'DESCANSO CORTO'}, long:{t:30*60,l:'DESCANSO LARGO'} };
+let mode='pomodoro', total=MODES.pomodoro.t, left=total, running=false, iv=null, pomos=0;
+function setMode(m) {
+  mode=m; total=MODES[m].t; left=total; running=false; clearInterval(iv);
+  document.getElementById('tplay').textContent='INICIAR';
+  document.getElementById('tlabel').textContent=MODES[m].l;
+  document.querySelectorAll('.mode-tab').forEach((t,i)=>t.classList.toggle('active',['pomodoro','short','long'][i]===m));
+  renderTimer();
+}
+function renderTimer() {
+  const m=Math.floor(left/60), s=left%60;
+  document.getElementById('tdisplay').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('tfill').style.width=(left/total*100)+'%';
+}
+function toggleTimer() {
+  if (running) {
+    clearInterval(iv); running=false;
+    document.getElementById('tplay').textContent='CONTINUAR';
+  } else {
+    running=true;
+    document.getElementById('tplay').textContent='PAUSAR';
+    iv=setInterval(()=>{
+      left--;
+      renderTimer();
+      if (left<=0) {
+        clearInterval(iv); running=false;
+        document.getElementById('tplay').textContent='INICIAR';
+        if (mode==='pomodoro') { pomos=Math.min(pomos+1,4); for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('done',i<pomos); if(pomos===4)pomos=0; }
+        try { const c=new AudioContext(),o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=880; g.gain.setValueAtTime(0.3,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.8); o.start();o.stop(c.currentTime+0.8); } catch(e){}
+      }
+    },1000);
+  }
+}
+function resetTimer() { clearInterval(iv); running=false; left=total; document.getElementById('tplay').textContent='INICIAR'; renderTimer(); }
+
+// ── EISENHOWER ──
+let pending=[], selected=null;
+document.getElementById('task-input').addEventListener('keypress',e=>{ if(e.key==='Enter') addTask(); });
+function addTask() {
+  const inp=document.getElementById('task-input'), v=inp.value.trim();
+  if(!v) return;
+  pending.push(v); inp.value='';
+  renderPending();
+}
+function renderPending() {
+  const area=document.getElementById('pending-area'), list=document.getElementById('pending-list');
+  const hint=document.getElementById('classify-hint'), btns=document.getElementById('classify-btns');
+  if(!pending.length){area.style.display='none';hint.style.display='none';btns.style.display='none';return;}
+  area.style.display='block'; hint.style.display='block';
+  btns.style.display = selected!==null ? 'flex' : 'none';
+  list.innerHTML='';
+  pending.forEach((t,i)=>{
+    const c=document.createElement('div');
+    c.className='pending-chip'+(selected===i?' selected':'');
+    c.textContent=t; c.onclick=()=>{ selected=selected===i?null:i; renderPending(); };
+    list.appendChild(c);
+  });
+}
+function classify(q) {
+  if(selected===null) return;
+  const task=pending[selected]; pending.splice(selected,1); selected=null;
+  const map={do:'list-do',plan:'list-plan',delegate:'list-delegate',delete:'list-delete'};
+  const l=document.getElementById(map[q]);
+  const chip=document.createElement('div'); chip.className='tchip';
+  chip.innerHTML=`<span>${task}</span><button class="tchip-del" onclick="this.parentElement.remove()">×</button>`;
+  l.appendChild(chip); renderPending();
+}
+
+// ── CALENDAR ──
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const HOURS = Array.from({length:17},(_,i)=>i+7); // 7h a 23h
+let currentDay = 0;
+let events = Array.from({length:7},()=>[]); // array por día
+let selectedColor = '#e8462a';
+
+function selectColor(el) {
+  document.querySelectorAll('.color-opt').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  selectedColor = el.dataset.color;
+}
+
+function selectDay(d) {
+  currentDay = d;
+  document.querySelectorAll('.day-tab').forEach((t,i)=>t.classList.toggle('active',i===d));
+  document.getElementById('cal-header-day').textContent = DAYS[d];
+  renderCalendar();
+}
+
+function buildGrid() {
+  const body = document.getElementById('cal-body');
+  body.innerHTML = '';
+  HOURS.forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'cal-row';
+    row.dataset.hour = h;
+    row.innerHTML = `<div class="cal-hour">${String(h).padStart(2,'0')}:00</div><div class="cal-slot" id="slot-${h}"></div>`;
+    body.appendChild(row);
+  });
+}
+
+function renderCalendar() {
+  buildGrid();
+  events[currentDay].forEach((ev, idx) => {
+    placeEvent(ev, idx);
+  });
+}
+
+function placeEvent(ev, idx) {
+  const fromH = parseInt(ev.from.split(':')[0]);
+  const fromM = parseInt(ev.from.split(':')[1]);
+  const toH   = parseInt(ev.to.split(':')[0]);
+  const toM   = parseInt(ev.to.split(':')[1]);
+  const slotH = Math.min(fromH, 23);
+  const slot  = document.getElementById('slot-' + slotH);
+  if (!slot) return;
+  const rowH  = 48;
+  const totalMinsFrom = (fromH - HOURS[0]) * 60 + fromM;
+  const totalMinsTo   = (toH   - HOURS[0]) * 60 + toM;
+  const top    = (totalMinsFrom / 60) * rowH;
+  const height = Math.max(((totalMinsTo - totalMinsFrom) / 60) * rowH, 26);
+  const chip = document.createElement('div');
+  chip.className = 'cal-event';
+  chip.style.cssText = `top:${top}px;height:${height}px;background:${ev.color};position:absolute;left:4px;right:4px;`;
+  chip.innerHTML = `<div class="cal-event-text">${ev.name}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.15rem"><div class="cal-event-time">${ev.from}–${ev.to}</div><button class="cal-event-del" onclick="removeEvent(${idx})">×</button></div>`;
+  const container = document.getElementById('cal-body');
+  container.style.position = 'relative';
+  chip.style.position = 'absolute';
+  const rowEl = document.querySelector(`[data-hour="${slotH}"]`);
+  if (rowEl) {
+    const rowTop = rowEl.offsetTop;
+    chip.style.top = (rowTop + (fromM/60)*rowH) + 'px';
+    chip.style.height = height + 'px';
+    container.appendChild(chip);
+  }
+}
+
+function addEvent() {
+  const name = document.getElementById('cal-input').value.trim();
+  const from = document.getElementById('cal-from').value;
+  const to   = document.getElementById('cal-to').value;
+  if (!name || !from || !to) return;
+  if (from >= to) { alert('La hora de fin debe ser posterior a la de inicio'); return; }
+  events[currentDay].push({ name, from, to, color: selectedColor });
+  document.getElementById('cal-input').value = '';
+  renderCalendar();
+}
+
+function removeEvent(idx) {
+  events[currentDay].splice(idx, 1);
+  renderCalendar();
+}
+
+document.getElementById('cal-input').addEventListener('keypress', e => { if(e.key==='Enter') addEvent(); });
+buildGrid();
+</script>
+</body>
+</html>
